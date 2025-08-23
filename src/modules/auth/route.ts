@@ -4,7 +4,7 @@ import { googleLogin, googleCallback } from "./google/authController";
 import { discordLogin, discordCallback } from "./discord/authController";
 import { githubLogin, githubCallback } from "./github/authController";
 import { login, signup } from "./custom/authController";
-// import { logout } from "./commonAuthHandler";
+import { logout } from "./commonAuthHandler";
 
 const router = Router();
 
@@ -23,6 +23,6 @@ router.post("/login", login);
 router.post("/signup", signup);
 
 // Logout
-// router.post("/logout", logout);
+router.post("/logout", logout);
 
 export default router;

@@ -1,4 +1,4 @@
-import { Response } from "express";
+import { Request, Response } from "express";
 import { config } from "dotenv";
 
 config();
@@ -16,7 +16,9 @@ export function handleAuthSuccess(res: Response, user: any, auth: string) {
   res.cookie("uid", token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
+    // secure: false,
     sameSite: "lax",
+    path: "/",
     maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
   });
 
@@ -29,11 +31,12 @@ export function handleAuthSuccess(res: Response, user: any, auth: string) {
 }
 
 export function logout(req: Request, res: Response) {
-  res.cookie("uid", "", {
+  res.clearCookie("uid", {
     httpOnly: true,
-    expires: new Date(0), // expire immediately
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
+    // secure: false,
+    path: "/", // must match original
   });
   return res.status(200).json({ success: true, message: "Logged out" });
 }
