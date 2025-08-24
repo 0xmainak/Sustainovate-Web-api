@@ -11,6 +11,7 @@ import {
   createEvent,
   updateEvent,
   deleteEvent,
+  registerEventById,
 } from "./controller/eventController";
 
 const router = Router();
@@ -23,6 +24,7 @@ router.get("/data/:identifier", authenticateToken, requireModerator, getEventByI
 
 //POST
 router.post("/create", authenticateToken, requireAdminOrModerator, createEvent);
+router.post("/:identifier/register", authenticateToken, registerEventById);
 
 //PUT Update event by ID
 router.put("/:id", authenticateToken, requireAdminOrModerator, updateEvent);

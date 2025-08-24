@@ -1,7 +1,9 @@
 import { Request, Response, NextFunction } from "express";
 import mongoose from "mongoose";
 
-import * as eventService from "../service"; // assumes you have CRUD methods there
+import EventModel from "../../event/modle"; // ✅ make sure this is your mongoose schema
+import * as eventService from "../service";
+import { AuthRequest } from "../../../core/middlewares/auth";
 
 // ✅ GET all events
 export async function getAllEvents(req: Request, res: Response, next: NextFunction) {
@@ -15,6 +17,7 @@ export async function getAllEvents(req: Request, res: Response, next: NextFuncti
     next(err);
   }
 }
+
 // ✅ GET all events data
 export async function getAllEventsData(req: Request, res: Response, next: NextFunction) {
   try {
@@ -28,62 +31,41 @@ export async function getAllEventsData(req: Request, res: Response, next: NextFu
   }
 }
 
-// Get Event By ID
+// ✅ Get Event By ID
 export async function getEventById(req: Request, res: Response, next: NextFunction) {
   try {
     const { id } = req.params;
 
-    // Validate MongoDB ObjectId
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid event ID",
-      });
+      return res.status(400).json({ success: false, message: "Invalid event ID" });
     }
 
     const event = await eventService.getById(id);
-
     if (!event) {
-      return res.status(404).json({
-        success: false,
-        message: "Event not found",
-      });
+      return res.status(404).json({ success: false, message: "Event not found" });
     }
 
-    return res.json({
-      success: true,
-      data: event,
-    });
+    return res.json({ success: true, data: event });
   } catch (err) {
     next(err);
   }
 }
-// Get Event By ID
+
+// ✅ Get Event By ID (full data)
 export async function getEventByIdData(req: Request, res: Response, next: NextFunction) {
   try {
     const { id } = req.params;
 
-    // Validate MongoDB ObjectId
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid event ID",
-      });
+      return res.status(400).json({ success: false, message: "Invalid event ID" });
     }
 
     const event = await eventService.getByIdData(id);
-
     if (!event) {
-      return res.status(404).json({
-        success: false,
-        message: "Event not found",
-      });
+      return res.status(404).json({ success: false, message: "Event not found" });
     }
 
-    return res.json({
-      success: true,
-      data: event,
-    });
+    return res.json({ success: true, data: event });
   } catch (err) {
     next(err);
   }
@@ -105,7 +87,6 @@ export async function createEvent(req: Request, res: Response, next: NextFunctio
       registrationEnd,
     } = req.body;
 
-    // Basic validation (optional — replace with zod/joi later)
     if (
       !title ||
       !description ||
@@ -156,6 +137,49 @@ export async function deleteEvent(req: Request, res: Response, next: NextFunctio
     }
 
     res.json({ success: true, message: "Event deleted successfully" });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// ✅ Register / Unregister user for event
+export async function registerEventById(req: AuthRequest, res: Response, next: NextFunction) {
+  try {
+    const { identifier } = req.params; // eventId
+    const userId = req.user?._id; // current user id
+
+    if (!mongoose.Types.ObjectId.isValid(identifier)) {
+      return res.status(400).json({ success: false, message: "Invalid event ID" });
+    }
+    if (!userId) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+
+    const userObjectId = new mongoose.Types.ObjectId(userId);
+    const event = await EventModel.findById(identifier);
+
+    if (!event) {
+      return res.status(404).json({ success: false, message: "Event not found" });
+    }
+
+    const alreadyRegistered = event.registrationUsers?.some((u) => u.equals(userObjectId));
+
+    let updatedEvent;
+    if (alreadyRegistered) {
+      updatedEvent = await EventModel.findByIdAndUpdate(
+        identifier,
+        { $pull: { registrationUsers: userObjectId } },
+        { new: true },
+      );
+      return res.json({ success: true, data: updatedEvent, message: "Successfully unregistered" });
+    } else {
+      updatedEvent = await EventModel.findByIdAndUpdate(
+        identifier,
+        { $addToSet: { registrationUsers: userObjectId } }, // prevents duplicates
+        { new: true },
+      );
+      return res.json({ success: true, data: updatedEvent, message: "Successfully registered" });
+    }
   } catch (err) {
     next(err);
   }
