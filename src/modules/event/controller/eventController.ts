@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+import mongoose from "mongoose";
 
 import * as eventService from "../service"; // assumes you have CRUD methods there
 
@@ -10,6 +11,37 @@ export async function getAllEventsData(req: Request, res: Response, next: NextFu
       return res.json({ success: true, data: [], message: "No events found" });
     }
     res.json({ success: true, data: events });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// Get Event By ID
+export async function getEventById(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { id } = req.params;
+
+    // Validate MongoDB ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid event ID",
+      });
+    }
+
+    const event = await eventService.getById(id);
+
+    if (!event) {
+      return res.status(404).json({
+        success: false,
+        message: "Event not found",
+      });
+    }
+
+    return res.json({
+      success: true,
+      data: event,
+    });
   } catch (err) {
     next(err);
   }
@@ -31,7 +63,18 @@ export async function getAllEvents(req: Request, res: Response, next: NextFuncti
 // ✅ CREATE event
 export async function createEvent(req: Request, res: Response, next: NextFunction) {
   try {
-    const { title, description, startTime, endTime, location, mode, createdBy, slug } = req.body;
+    const {
+      title,
+      description,
+      startTime,
+      endTime,
+      location,
+      mode,
+      createdBy,
+      slug,
+      registrationStart,
+      registrationEnd,
+    } = req.body;
 
     // Basic validation (optional — replace with zod/joi later)
     if (
@@ -42,7 +85,9 @@ export async function createEvent(req: Request, res: Response, next: NextFunctio
       !location ||
       !mode ||
       !createdBy ||
-      !slug
+      !slug ||
+      !registrationStart ||
+      !registrationEnd
     ) {
       return res.status(400).json({ success: false, message: "Missing required fields" });
     }

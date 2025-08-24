@@ -3,30 +3,42 @@ import mongoose from "mongoose";
 import { config } from "dotenv";
 config();
 
-import User from "../src/modules/user/modle"; // adjust path if needed
+// Import Event model
+import Event from "../src/modules/event/modle"; // adjust path if needed
 
-async function migratePoints() {
+async function migrateRegistrationDates() {
   try {
     await mongoose.connect(process.env.DATABASE_URL!);
 
-    // Find users missing 'points' or missing 'authProviders'
-    const users = await User.find({
+    // Find events with registrationDeadline
+    const events = await Event.find({
       $or: [
-        { points: { $exists: false } },
-        { authProviders: { $exists: false } },
-        { authProviders: { $size: 0 } },
+        { registrationDeadline: { $exists: true } },
+        { registrationStart: { $exists: false } },
+        { registrationEnd: { $exists: false } },
       ],
     });
 
-    for (const user of users) {
-      if (user.points === undefined) {
-        user.points = 0; // initialize points
+    for (const event of events) {
+      // Rename registrationDeadline -> registrationEnd
+      if (event.registrationDeadline !== undefined) {
+        event.registrationEnd = event.registrationDeadline;
+        event.registrationDeadline = undefined;
       }
-      await user.save();
-      console.log(`✅ Migrated points for user: ${user.email || user.username}`);
+
+      // Initialize registrationStart if missing
+      if (event.registrationStart === undefined) {
+        // Example: default to 7 days before startTime
+        event.registrationStart = new Date(
+          new Date(event.startTime).getTime() - 7 * 24 * 60 * 60 * 1000
+        );
+      }
+
+      await event.save();
+      console.log(`✅ Migrated event: ${event.title}`);
     }
 
-    console.log("🎉 Points migration completed successfully.");
+    console.log("🎉 Registration migration completed successfully.");
     process.exit(0);
   } catch (err) {
     console.error("❌ Migration failed:", err);
@@ -34,4 +46,4 @@ async function migratePoints() {
   }
 }
 
-migratePoints();
+migrateRegistrationDates();

@@ -15,7 +15,8 @@ export async function getAllData() {
       thumbnailUrl: 1,
       startTime: 1,
       endTime: 1,
-      registrationDeadline: 1,
+      registrationStart: 1,
+      registrationEnd: 1,
       location: 1,
       mode: 1,
       createdBy: 1,
@@ -54,4 +55,13 @@ export async function update(id: string, data: Partial<IEvent>) {
 // Delete
 export async function remove(id: string) {
   return Event.findByIdAndDelete(id);
+}
+
+export async function getById(id: string) {
+  try {
+    const event = await Event.findById(id);
+    return event;
+  } catch (error) {
+    throw new Error(`Error fetching event by id: ${error}`);
+  }
 }

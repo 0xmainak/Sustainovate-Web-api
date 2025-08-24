@@ -10,7 +10,8 @@ export interface IEvent {
   // Timing
   startTime: Date;
   endTime: Date;
-  registrationDeadline?: Date;
+  registrationStart?: Date;
+  registrationEnd?: Date;
 
   // Location & mode
   location: string;
@@ -53,7 +54,8 @@ const EventSchema = new Schema<IEvent, EventModel>(
     // Time
     startTime: { type: Date, required: true },
     endTime: { type: Date, required: true },
-    registrationDeadline: { type: Date },
+    registrationStart: { type: Date },
+    registrationEnd: { type: Date },
 
     // Location
     location: { type: String, required: true },
