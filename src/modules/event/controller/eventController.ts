@@ -4,6 +4,18 @@ import mongoose from "mongoose";
 import * as eventService from "../service"; // assumes you have CRUD methods there
 
 // ✅ GET all events
+export async function getAllEvents(req: Request, res: Response, next: NextFunction) {
+  try {
+    const events = await eventService.getAllData();
+    if (!events || events.length === 0) {
+      return res.json({ success: true, data: [], message: "No events found" });
+    }
+    res.json({ success: true, data: events });
+  } catch (err) {
+    next(err);
+  }
+}
+// ✅ GET all events data
 export async function getAllEventsData(req: Request, res: Response, next: NextFunction) {
   try {
     const events = await eventService.getAll();
@@ -46,15 +58,32 @@ export async function getEventById(req: Request, res: Response, next: NextFuncti
     next(err);
   }
 }
-
-// ✅ GET all events data
-export async function getAllEvents(req: Request, res: Response, next: NextFunction) {
+// Get Event By ID
+export async function getEventByIdData(req: Request, res: Response, next: NextFunction) {
   try {
-    const events = await eventService.getAllData();
-    if (!events || events.length === 0) {
-      return res.json({ success: true, data: [], message: "No events found" });
+    const { id } = req.params;
+
+    // Validate MongoDB ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid event ID",
+      });
     }
-    res.json({ success: true, data: events });
+
+    const event = await eventService.getByIdData(id);
+
+    if (!event) {
+      return res.status(404).json({
+        success: false,
+        message: "Event not found",
+      });
+    }
+
+    return res.json({
+      success: true,
+      data: event,
+    });
   } catch (err) {
     next(err);
   }

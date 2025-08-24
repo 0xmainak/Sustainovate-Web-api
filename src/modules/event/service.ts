@@ -1,11 +1,13 @@
+import mongoose from "mongoose";
+
 import Event, { IEvent } from "./modle";
 
 // Get all
-export async function getAll() {
+export async function getAllData() {
   return Event.find().lean();
 }
 
-export async function getAllData() {
+export async function getAll() {
   return Event.find(
     {},
     {
@@ -57,11 +59,55 @@ export async function remove(id: string) {
   return Event.findByIdAndDelete(id);
 }
 
-export async function getById(id: string) {
+export async function getByIdData(id: string) {
   try {
     const event = await Event.findById(id);
     return event;
   } catch (error) {
     throw new Error(`Error fetching event by id: ${error}`);
+  }
+}
+// Fetch a single event by ID with selected fields
+export async function getById(id: string) {
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new Error("Invalid event ID");
+  }
+
+  try {
+    const event = await Event.findById(id, {
+      _id: 1,
+      title: 1,
+      description: 1,
+      thumbnailUrl: 1,
+      startTime: 1,
+      endTime: 1,
+      registrationStart: 1,
+      registrationEnd: 1,
+      location: 1,
+      mode: 1,
+      createdBy: 1,
+      organizer: 1,
+      domains: 1,
+      registrationUserCount: 1,
+      capacity: 1,
+      isOpen: 1,
+      status: 1,
+      isPublished: 1,
+      isFeatured: 1,
+      slug: 1,
+      tags: 1,
+      category: 1,
+      meta: 1,
+      createdAt: 1,
+      updatedAt: 1,
+    }).lean();
+
+    if (!event) {
+      throw new Error("Event not found");
+    }
+
+    return event;
+  } catch (error) {
+    throw new Error(`Failed to fetch event by id: ${error}`);
   }
 }

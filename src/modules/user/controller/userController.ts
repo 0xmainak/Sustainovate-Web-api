@@ -128,6 +128,7 @@ export async function getMe(req: AuthRequest, res: Response) {
     }
 
     res.status(200).json({ success: true, user });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (err) {
     res.status(500).json({ success: false, message: "Server error" });
   }
