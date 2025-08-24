@@ -127,6 +127,16 @@ export async function getMe(req: AuthRequest, res: Response) {
   if (!req.user) {
     return res.status(401).json({ success: false, message: "Unauthorized" });
   }
-  // req.user should already have the info from authenticateToken
-  res.status(200).json({ success: true, user: req.user });
+
+  try {
+    // Fetch full user info from DB using the user ID from token
+    const user = await User.findById(req.user._id).select("username email role avatar joined");
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    res.status(200).json({ success: true, user });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Server error" });
+  }
 }
