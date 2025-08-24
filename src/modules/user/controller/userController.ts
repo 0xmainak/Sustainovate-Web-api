@@ -1,15 +1,15 @@
 import { Request, Response, NextFunction } from "express";
-import mongoose from "mongoose"; // for validating the type
+import mongoose from "mongoose";
 
 import * as userService from "../service";
 import { AuthRequest } from "../../../core/middlewares/auth";
 import User from "../modle";
 
-// GET all users data
+// GET all users (only role: "user") with public fields
 export async function getAllUsers(req: Request, res: Response, next: NextFunction) {
   try {
     const users = await User.find(
-      {},
+      { role: "user" }, // Only users with role "user"
       {
         _id: 1,
         username: 1,
@@ -20,7 +20,6 @@ export async function getAllUsers(req: Request, res: Response, next: NextFunctio
       },
     ).lean();
 
-    // Map to consistent public fields
     const publicUsers = users.map((u) => ({
       id: u._id,
       name: u.globalName || u.username.split(" ")[0],
@@ -30,52 +29,44 @@ export async function getAllUsers(req: Request, res: Response, next: NextFunctio
       points: u.points ?? 0,
     }));
 
-    res.json({ data: publicUsers });
+    res.json({ success: true, data: publicUsers });
   } catch (err) {
     next(err);
   }
 }
 
-// GET all users all data
+// GET all users with all fields
 export async function getAllUsersData(req: Request, res: Response, next: NextFunction) {
   try {
     let users: unknown = await userService.getAll();
-    if (!users) users = "No Users";
+    if (!users) users = [];
     res.json({ success: true, data: users });
   } catch (err) {
     next(err);
   }
 }
 
-// GET user by any
+// GET user by identifier (ID, email, or username)
 export async function getUser(req: Request, res: Response, next: NextFunction) {
   try {
     const { identifier } = req.params;
     let user = null;
-    // Try by ObjectId
+
     if (mongoose.Types.ObjectId.isValid(identifier)) {
       user = await userService.getById(identifier);
     }
-    // If not found & identifier looks like an email
     if (!user && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier)) {
       user = await userService.findByEmail(identifier);
     }
-    // If still not found → fallback to username
     if (!user) {
       user = await userService.findByUsername(identifier);
     }
-    // Handle user not found
+
     if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
+      return res.status(404).json({ success: false, message: "User not found" });
     }
-    // Success
-    return res.json({
-      success: true,
-      data: user,
-    });
+
+    res.json({ success: true, data: user });
   } catch (err) {
     next(err);
   }
@@ -86,13 +77,10 @@ export async function updateUserById(req: Request, res: Response, next: NextFunc
   try {
     const updatedUser = await userService.updateById(req.params.id, req.body);
     if (!updatedUser) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ success: false, message: "User not found" });
     }
 
-    res.json({
-      message: "User updated successfully",
-      user: updatedUser,
-    });
+    res.json({ success: true, message: "User updated successfully", user: updatedUser });
   } catch (err) {
     next(err);
   }
@@ -103,15 +91,18 @@ export async function deleteUserById(req: Request, res: Response, next: NextFunc
   try {
     const { password } = req.body;
     if (!password) {
-      return res.status(400).json({ message: "Password is required" });
+      return res.status(400).json({ success: false, message: "Password is required" });
     }
 
     const deletedUser = await userService.deleteById(req.params.id, password);
     if (!deletedUser) {
-      return res.status(401).json({ message: "Invalid credentials or user not found" });
+      return res
+        .status(401)
+        .json({ success: false, message: "Invalid credentials or user not found" });
     }
 
     res.json({
+      success: true,
       message: "User deleted successfully",
       user: {
         id: deletedUser._id,
@@ -123,13 +114,14 @@ export async function deleteUserById(req: Request, res: Response, next: NextFunc
     next(err);
   }
 }
+
+// GET currently logged-in user
 export async function getMe(req: AuthRequest, res: Response) {
   if (!req.user) {
     return res.status(401).json({ success: false, message: "Unauthorized" });
   }
 
   try {
-    // Fetch full user info from DB using the user ID from token
     const user = await User.findById(req.user._id).select("username email role avatar joined");
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found" });
