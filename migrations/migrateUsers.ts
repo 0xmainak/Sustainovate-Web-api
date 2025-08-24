@@ -1,3 +1,4 @@
+/* eslint-disable no-self-assign */
 /* eslint-disable no-console */
 import mongoose from "mongoose";
 import { config } from "dotenv";
@@ -21,16 +22,16 @@ async function migrateRegistrationDates() {
 
     for (const event of events) {
       // Rename registrationDeadline -> registrationEnd
-      if (event.registrationDeadline !== undefined) {
-        event.registrationEnd = event.registrationDeadline;
-        event.registrationDeadline = undefined;
+      if (event.registrationEnd !== undefined) {
+        event.registrationEnd = event.registrationEnd;
+        event.registrationEnd = undefined;
       }
 
       // Initialize registrationStart if missing
       if (event.registrationStart === undefined) {
         // Example: default to 7 days before startTime
         event.registrationStart = new Date(
-          new Date(event.startTime).getTime() - 7 * 24 * 60 * 60 * 1000
+          new Date(event.startTime).getTime() - 7 * 24 * 60 * 60 * 1000,
         );
       }
 
