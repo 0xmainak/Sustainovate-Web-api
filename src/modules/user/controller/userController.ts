@@ -87,19 +87,37 @@ export async function updateUserById(req: Request, res: Response, next: NextFunc
 }
 
 // Delete user by ID
-export async function deleteUserById(req: Request, res: Response, next: NextFunction) {
+export async function deleteUserById(req: AuthRequest, res: Response, next: NextFunction) {
   try {
-    const { password } = req.body;
-    if (!password) {
-      return res.status(400).json({ success: false, message: "Password is required" });
+    const requester = req.user; // set by authenticateToken middleware
+    if (!requester) return res.status(401).json({ success: false, message: "Unauthorized" });
+
+    let deletedUser;
+
+    if (requester.role === "moderator" || requester.role === "admin") {
+      const { username } = req.body;
+      if (!username)
+        return res.status(400).json({ success: false, message: "Username is required" });
+
+      deletedUser = await userService.deleteById("", {
+        username,
+        requesterRole: requester.role,
+      });
+    } else {
+      const { password } = req.body;
+      if (!password)
+        return res.status(400).json({ success: false, message: "Password is required" });
+
+      deletedUser = await userService.deleteById(requester._id, {
+        password,
+        requesterRole: requester.role,
+      });
     }
 
-    const deletedUser = await userService.deleteById(req.params.id, password);
-    if (!deletedUser) {
+    if (!deletedUser)
       return res
         .status(401)
         .json({ success: false, message: "Invalid credentials or user not found" });
-    }
 
     res.json({
       success: true,

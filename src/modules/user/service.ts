@@ -26,13 +26,30 @@ export async function updateById(id: string, data: Partial<IUser>) {
   return User.findByIdAndUpdate(id, data, { new: true }).select("-password");
 }
 
-export async function deleteById(id: string, password: string) {
-  const user = await User.findById(id).select("+password");
-  if (!user) return null;
+export async function deleteById(
+  id: string,
+  options: { password?: string; username?: string; requesterRole?: string },
+) {
+  const { password, username, requesterRole } = options;
 
-  const isMatch = await bcrypt.compare(password, user.password!);
-  if (!isMatch) return null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let user: any;
 
-  await user.deleteOne(); // delete the user if password matches
+  if (requesterRole === "moderator" || requesterRole === "admin") {
+    if (!username) return null;
+    user = await User.findOne({ username });
+    if (!user) return null;
+  } else {
+    // Regular user must provide password
+    user = await User.findById(id).select("+password");
+    if (!user) return null;
+
+    if (!password) return null;
+
+    const isMatch = await bcrypt.compare(password, user.password!);
+    if (!isMatch) return null;
+  }
+
+  await user.deleteOne();
   return user;
 }
