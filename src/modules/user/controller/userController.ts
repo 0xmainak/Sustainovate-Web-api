@@ -35,6 +35,28 @@ export async function getAllUsers(req: Request, res: Response, next: NextFunctio
   }
 }
 
+export async function getAllAdminMod(req: Request, res: Response, next: NextFunction) {
+  try {
+    const users = await User.find(
+      { role: { $in: ["admin", "moderator"] } }, // ✅ only admin & mod
+      "_id username globalName avatar points email",
+    ).lean();
+
+    const publicUsers = users.map((u) => ({
+      id: u._id,
+      name: u.globalName || u.username.split(" ")[0],
+      username: u.username,
+      email: u.email || null,
+      avatar: u.avatar || "",
+      points: u.points ?? 0,
+    }));
+
+    res.json({ success: true, data: publicUsers });
+  } catch (err) {
+    next(err);
+  }
+}
+
 // GET all users with all fields
 export async function getAllUsersData(req: Request, res: Response, next: NextFunction) {
   try {

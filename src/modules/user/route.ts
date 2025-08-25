@@ -8,6 +8,7 @@ const router = Router();
 
 //GET
 router.get("/", userController.getAllUsers);
+router.get("/adminmod", userController.getAllAdminMod);
 router.get("/data", authenticateToken, userController.getAllUsersData);
 router.get("/me", authenticateToken, userController.getMe);
 router.get("/:identifier", userController.getUser);

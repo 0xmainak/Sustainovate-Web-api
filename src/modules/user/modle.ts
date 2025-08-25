@@ -64,7 +64,7 @@ const UserSchema = new Schema<IUser, UserModel, IUserMethods>(
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
 
     // Password only used for "custom" provider
-    password: { type: String, required: true, select: false },
+    password: { type: String, required: false, select: false },
 
     // Auth providers (google, github, discord, custom)
     authProviders: {
