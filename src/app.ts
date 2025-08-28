@@ -9,11 +9,21 @@ import routes from "./routes"; // centralized route loader
 
 const app: Application = express();
 
+// --- Allowed Origins ---
+const allowedOrigins = ["http://localhost:3000", "http://sustainovate.mainak.me"];
+
 // --- Global middlewares ---
 app.use(
   cors({
-    origin: "http://localhost:3000", // your frontend URL
-    credentials: true,
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like mobile apps or curl)
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("CORS not allowed for this origin: " + origin));
+      }
+    },
+    credentials: true, // allow cookies/auth headers
   }),
 );
 app.use(helmet());
