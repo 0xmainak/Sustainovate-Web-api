@@ -85,8 +85,11 @@ export async function createEvent(req: Request, res: Response, next: NextFunctio
       slug,
       registrationStart,
       registrationEnd,
+      thumbnailUrl,
+      domains, // <--- add this
     } = req.body;
 
+    // Validate required fields
     if (
       !title ||
       !description ||
@@ -97,9 +100,15 @@ export async function createEvent(req: Request, res: Response, next: NextFunctio
       !createdBy ||
       !slug ||
       !registrationStart ||
-      !registrationEnd
+      !registrationEnd ||
+      !thumbnailUrl ||
+      !domains || // <--- must exist
+      !Array.isArray(domains) || // <--- must be array
+      domains.length === 0 // <--- must be non-empty
     ) {
-      return res.status(400).json({ success: false, message: "Missing required fields" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Missing required fields or domains empty" });
     }
 
     const newEvent = await eventService.create(req.body);
