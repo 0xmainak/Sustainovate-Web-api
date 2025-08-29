@@ -18,12 +18,12 @@ FROM node:20-alpine AS runner
 
 WORKDIR /app
 
-# Copy both package.json and package-lock.json to the runner stage
-COPY --from=builder /app/package*.json ./
+# Copy only the package.json and the built files to the runner stage
+COPY --from=builder /app/package.json ./
 COPY --from=builder /app/dist ./dist
 
-# This command will now succeed because the lock file is present
-RUN npm ci --omit=dev
+# Copy node_modules from the builder stage
+COPY --from=builder /app/node_modules ./node_modules
 
 # Expose the application port
 EXPOSE 4000

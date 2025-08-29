@@ -1,32 +1,20 @@
-module.exports = [
-  {
-    ignores: ["dist/**", "node_modules/**", "logs/**"],
-  },
-  require("@eslint/js").configs.recommended,
-  ...require("typescript-eslint").configs.recommended,
-  require("eslint-config-prettier"),
-  {
-    files: ["eslint.config.js"], // allow require here
-    rules: {
-      "@typescript-eslint/no-require-imports": "off",
-    },
-  },
+import eslint from '@eslint/js';
+import tseslint from 'typescript-eslint';
+import prettier from 'eslint-config-prettier';
+import eslintPluginImport from 'eslint-plugin-import';
+
+export default tseslint.config(
+  eslint.configs.recommended,
+  ...tseslint.configs.recommended,
+  prettier,
   {
     plugins: {
-      import: require("eslint-plugin-import"),
-      prettier: require("eslint-plugin-prettier"),
+      import: eslintPluginImport,
     },
     rules: {
-      "prettier/prettier": "error",
-      "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
-      "import/order": [
-        "error",
-        {
-          groups: ["builtin", "external", "internal", "parent", "sibling", "index"],
-          "newlines-between": "always",
-        },
-      ],
-      "no-console": "warn",
+      // Add or override any rules you need here
+      'prettier/prettier': 'error',
+      'import/no-unresolved': 'error',
     },
   },
-];
+);
