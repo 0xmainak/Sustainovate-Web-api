@@ -5,7 +5,6 @@ import morgan from "morgan";
 import cookieParser from "cookie-parser";
 
 // import { errorMiddleware } from "./core/middlewares/error.middleware";
-import monRoutes from "./monRoutes"; // centralized route loader
 import routes from "./routes"; // centralized route loader
 import client,{ collectDefaultMetrics } from "prom-client";
 

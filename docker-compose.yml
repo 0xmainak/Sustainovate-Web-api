@@ -32,7 +32,7 @@ services:
       - ./grafana-datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
     restart: always
     environment:
-      - GF_SERVER_ROOT_URL=http://sustainovate.mainak.me/grafana
+      - GF_SERVER_ROOT_URL=https://sustainovate.mainak.me/grafana
     depends_on:
       - prom-server
 
