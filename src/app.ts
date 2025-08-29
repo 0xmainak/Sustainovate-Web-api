@@ -5,6 +5,7 @@ import morgan from "morgan";
 import cookieParser from "cookie-parser";
 
 // import { errorMiddleware } from "./core/middlewares/error.middleware";
+import monRoutes from "./monRoutes"; // centralized route loader
 import routes from "./routes"; // centralized route loader
 
 const app: Application = express();
@@ -34,6 +35,9 @@ app.use(cookieParser());
 
 // --- API routes ---
 app.use("/api", routes);
+
+// --- MON routes ---
+app.use("/monitor", monRoutes);
 
 // --- Health check route ---
 app.get("/health", (_, res) => {

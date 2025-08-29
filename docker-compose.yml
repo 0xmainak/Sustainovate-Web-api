@@ -1,4 +1,4 @@
-version: '3.8' # Use a valid and modern version
+version: "3.8"
 
 services:
   sustainovate-backend:
@@ -13,3 +13,26 @@ services:
       - ./logs:/app/logs
     env_file:
       - .env
+
+  prom-server:
+    image: prom/prometheus
+    container_name: prometheus-container
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus-config.yml:/etc/prometheus/prometheus.yml
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana-container
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana-datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
+    restart: always
+    depends_on:
+      - prom-server
+
+volumes:
+  grafana-data: {} # This creates a persistent volume for Grafana data
