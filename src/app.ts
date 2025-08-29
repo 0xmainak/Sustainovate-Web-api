@@ -7,8 +7,10 @@ import cookieParser from "cookie-parser";
 // import { errorMiddleware } from "./core/middlewares/error.middleware";
 import monRoutes from "./monRoutes"; // centralized route loader
 import routes from "./routes"; // centralized route loader
+import client,{ collectDefaultMetrics } from "prom-client";
 
 const app: Application = express();
+collectDefaultMetrics({ register: client.register });
 
 // --- Allowed Origins ---
 const allowedOrigins = ["http://localhost:3000", "http://sustainovate.mainak.me"];
@@ -37,7 +39,16 @@ app.use(cookieParser());
 app.use("/api", routes);
 
 // --- MON routes ---
-app.use("/monitor", monRoutes);
+app.get("/metrics", async (_, res) => {
+  try {
+    res.setHeader("Content-Type", client.register.contentType);
+    const metrics = await client.register.metrics();
+    res.send(metrics);
+  } catch (ex) {
+    res.status(500).end(ex);
+  }
+});
+
 
 // --- Health check route ---
 app.get("/health", (_, res) => {
