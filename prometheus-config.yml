@@ -3,7 +3,7 @@ global:
 
 scrape_configs:
   - job_name: prometheus
-    metrics_path: /monitor
+    metrics_path: /monitor/metrics
     static_configs:
       - targets: ["sustainovate.mainak.me:4000"]
       
