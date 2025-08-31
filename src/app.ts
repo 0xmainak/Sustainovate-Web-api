@@ -12,7 +12,7 @@ const app: Application = express();
 collectDefaultMetrics({ register: client.register });
 
 // --- Allowed Origins ---
-const allowedOrigins = ["http://localhost:3000", "https://sustainovate.mainak.me", "https://api.mainak.me"];
+const allowedOrigins = ["http://localhost:3000", "https://sustainovate.mainak.me"];
 
 // --- Global middlewares ---
 app.use(
