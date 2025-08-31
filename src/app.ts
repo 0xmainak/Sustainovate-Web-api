@@ -12,22 +12,22 @@ const app: Application = express();
 collectDefaultMetrics({ register: client.register });
 
 // --- Allowed Origins ---
-const allowedOrigins = ["http://localhost:3000", "https://sustainovate.mainak.me"];
+// const allowedOrigins = ["http://localhost:3000"];
 
-// --- Global middlewares ---
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      // Allow requests with no origin (like mobile apps or curl)
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("CORS not allowed for this origin: " + origin));
-      }
-    },
-    credentials: true, // allow cookies/auth headers
-  }),
-);
+// // --- Global middlewares ---
+// app.use(
+//   cors({
+//     origin: function (origin, callback) {
+//       // Allow requests with no origin (like mobile apps or curl)
+//       if (!origin || allowedOrigins.includes(origin)) {
+//         callback(null, true);
+//       } else {
+//         callback(new Error("CORS not allowed for this origin: " + origin));
+//       }
+//     },
+//     credentials: true, // allow cookies/auth headers
+//   }),
+// );
 app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
