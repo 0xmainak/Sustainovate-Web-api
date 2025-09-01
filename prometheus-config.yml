@@ -4,5 +4,6 @@ global:
 scrape_configs:
   - job_name: prometheus
     static_configs:
-      - targets: ["sustainovate.mainak.me:4000"]
+      - targets: ["api.mainak.me:4000"]
+      # - targets: ["api.mainak.me"]
       # - targets: ["192.168.0.:4000"]
