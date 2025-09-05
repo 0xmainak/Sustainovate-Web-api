@@ -112,8 +112,8 @@ UserSchema.methods.comparePassword = async function (candidatePassword: string):
 };
 
 // Indexes for fast lookups
-UserSchema.index({ email: 1 });
-UserSchema.index({ username: 1 });
+// UserSchema.index({ email: 1 });
+// UserSchema.index({ username: 1 });
 UserSchema.index({ "authProviders.providerId": 1 });
 UserSchema.index({ "authProviders.provider": 1 });
 

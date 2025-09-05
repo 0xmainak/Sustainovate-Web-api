@@ -14,11 +14,11 @@ collectDefaultMetrics({ register: client.register });
 // --- Allowed Origins ---
 // const allowedOrigins = ["http://localhost:3000"];
 
-// // --- Global middlewares ---
+// --- Global middlewares ---
 // app.use(
 //   cors({
 //     origin: function (origin, callback) {
-//       // Allow requests with no origin (like mobile apps or curl)
+      // Allow requests with no origin (like mobile apps or curl)
 //       if (!origin || allowedOrigins.includes(origin)) {
 //         callback(null, true);
 //       } else {
