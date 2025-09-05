@@ -23,13 +23,14 @@ services:
       - ./prometheus-config.yml:/etc/prometheus/prometheus.yml
       - prometheus_data:/prometheus
     command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
       - '--web.external-url=https://api.mainak.me/prometheus'
 
   grafana:
     image: grafana/grafana:latest
     container_name: grafana-container
     ports:
-      - "3300:3000"
+      - "3300:3000" # external:internal
     volumes:
       - grafana-data:/var/lib/grafana
       - ./grafana-datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
@@ -40,4 +41,5 @@ services:
       - prom-server
 
 volumes:
-  grafana-data: {} # This creates a persistent volume for Grafana data
+  prometheus_data:
+  grafana-data:
