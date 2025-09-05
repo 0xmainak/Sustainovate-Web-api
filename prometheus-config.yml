@@ -6,4 +6,3 @@ scrape_configs:
     static_configs:
       - targets: ["api.mainak.me"]
       # - targets: ["api.mainak.me"]
-      # - targets: ["192.168.0.:4000"]
