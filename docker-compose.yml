@@ -1,40 +1,75 @@
+# docker-compose.yml
+
 version: "3.8"
 
 services:
+  # ----------------------------------------------------------------
+  # Your Application Backend
+  # ----------------------------------------------------------------
   sustainovate-backend:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: sustainovate-backend-container
-    restart: always
+    restart: unless-stopped # Safer than 'always'
     ports:
       - "4000:4000"
     volumes:
       - ./logs:/app/logs
     env_file:
       - .env
+    networks:
+      - monitor-net
 
+  # ----------------------------------------------------------------
+  # Prometheus Monitoring Server
+  # ----------------------------------------------------------------
   prom-server:
-    image: prom/prometheus
+    image: prom/prometheus:latest
     container_name: prometheus-container
+    restart: unless-stopped
     ports:
       - "9090:9090"
     volumes:
       - ./prometheus-config.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus # Persistent volume for metrics data
+    networks:
+      - monitor-net
+    # This command is CRUCIAL for running behind a reverse proxy subpath
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--web.external-url=https://api.mainak.me/prometheus'
 
+  # ----------------------------------------------------------------
+  # Grafana Visualization Dashboard
+  # ----------------------------------------------------------------
   grafana:
     image: grafana/grafana:latest
     container_name: grafana-container
+    restart: unless-stopped
     ports:
-      - "3300:3000" # Changed from 3000:3000
+      - "3300:3000"
     volumes:
-      - grafana-data:/var/lib/grafana
+      - grafana-data:/var/lib/grafana # Persistent volume for dashboards/settings
       - ./grafana-datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
-    restart: always
+    networks:
+      - monitor-net
     environment:
       - GF_SERVER_ROOT_URL=https://sustainovate.mainak.me/grafana
+      - GF_SECURITY_ADMIN_PASSWORD=your_strong_password_here # Set a secure password
     depends_on:
       - prom-server
 
+# ----------------------------------------------------------------
+# Define Networks and Volumes
+# ----------------------------------------------------------------
+networks:
+  monitor-net:
+    driver: bridge
+
 volumes:
-  grafana-data: {} # This creates a persistent volume for Grafana data
+  prometheus-data: {}
+  grafana-data: {}
